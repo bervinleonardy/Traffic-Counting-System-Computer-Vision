@@ -1,4 +1,4 @@
-# project-opencv
+# Project Opencv
 Traffic Counting System
 
 Project ini merupakan penelitian untuk tugas akhir mahasiswa di Universitas Komputer Indonesia , berdasarkan studi kasus di Dinas perhubungan kota Sukabumi penghitungan kendaraan masih dilakukan dengan cara menghitung kendaraan yang lewat dengan pengamatan dan pencatatan oleh petugas. dimana petugas ditugaskan di pos pemantauan untuk menghitung kendaraan yang melintas. Petugas yang ditugaskan dilapangan berjumlah 4 sampai 5 petugas dalam satu ruas jalan. Alat yang digunakannya untuk penghitungan, yaitu counter. Petugas harus menyediakan beberapa counter untuk menghitung kendaraan, dimana kendaraan yang di hitung meliputi kendaraan roda dua (motor), roda empat (mobil) dan kendaraan beroda banyak (truk). Hal ini mengakibatkan petugas dilapangan harus melakukan kerja tambahan dimana petugas harus menghitung kendaraan serta membuat laporan penghitungan tersebut. Project opencv ini dapat menjadi salah satu solusi dari permasalahan tersebut 
