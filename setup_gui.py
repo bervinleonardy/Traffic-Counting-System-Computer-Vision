@@ -1,9 +1,15 @@
+from imutils.video import FPS
 import numpy
+import os
 from pygame import mixer
 import time
 import cv2
+import imutils
 from tkinter import *
 import tkinter.messagebox
+import tkinter.ttk
+import tkinter.filedialog
+
 root=Tk()
 root.geometry('500x570')
 frame = Frame(root, relief=RIDGE, borderwidth=2)
@@ -23,11 +29,11 @@ def hel():
    help(cv2)
 
 def Contri():
-   tkinter.messagebox.showinfo("Contributors","\n1.BLAXTECH \n")
+   tkinter.messagebox.showinfo("Contributors","\nBLAXTECH \n")
 
 
 def anotherWin():
-   tkinter.messagebox.showinfo("About",'Driver Cam version v1.0\n Made Using\n-OpenCV\n-Numpy\n-Tkinter\n In Python 3')
+   tkinter.messagebox.showinfo("About",'Driver Cam version v13.80.853.0\n Made Using\n-OpenCV\n-Numpy\n-Tkinter\n In Python 3')
 
 def driverDetails():
    tkinter.messagebox.showinfo("Information Details",
@@ -52,35 +58,109 @@ subm3.add_command(label="About",command=anotherWin)
 
 
 
-def exitt():
+def keluar():
    exit()
-
   
-def web():
-   capture =cv2.VideoCapture(0)
-   while True:
-      ret,frame=capture.read()
-      gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-      cv2.imshow('frame',frame)
-      if cv2.waitKey(1) & 0xFF ==ord('q'):
-         break
-   capture.release()
-   cv2.destroyAllWindows()
+def deteksi_kamera():
+   # initialize the video writer (we'll instantiate later if need be)
+   writer = None
 
-def webrec():
-   capture =cv2.VideoCapture(0)
-   fourcc=cv2.VideoWriter_fourcc(*'XVID') 
-   op=cv2.VideoWriter('Sample1.avi',fourcc,11.0,(640,480))
-   while True:
-      ret,frame=capture.read()
-      gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-      cv2.imshow('frame',frame)
-      op.write(frame)
-      if cv2.waitKey(1) & 0xFF ==ord('q'):
+   # initialize the frame dimensions (we'll set them as soon as we read
+   # the first frame from the video)
+   W = None
+   H = None   
+   kamera =cv2.VideoCapture(0)
+   pesan = tkinter.messagebox.askyesno("Info","\nApakah ingin menggunakan file video? \n")
+   while pesan == False:
+         ret,frame=kamera.read()
+         if frame is None :
+            tkinter.messagebox.showwarning("Kesalahan","\nKamera tidak terdeteksi \n")
+            break      
+         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+         cv2.imshow('Kamera',frame)
+         if cv2.waitKey(1) & 0xFF ==ord('q'):
+            break
+   kamera.release()
+   cv2.destroyAllWindows()
+   while pesan == True:
+      filevideo = tkinter.filedialog.askopenfilename(initialdir = "/",title = "Pilih file",filetypes = (("file video","*.AVI"),("all files","*.*")))
+      filebuka = os.path.abspath(os.path.expanduser(os.path.expandvars(filevideo)))
+      print(filebuka)
+      bacavideo = cv2.VideoCapture(filebuka)
+      # Check if camera opened successfully
+      if (bacavideo.isOpened()== False): 
+         tkinter.messagebox.showwarning("Kesalahan","\n Error membuka stream video \n")      
+      while(bacavideo.isOpened()== True):
+         ret, frame = bacavideo.read()
+         if ret == True:
+            cv2.imshow('Kamera',frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+               break
+         # Break the loop
+         else: 
+            break               
+      bacavideo.release()
+      cv2.destroyAllWindows()
+      tkinter.messagebox.showinfo("Info","\n Stream video selesai \n") 
+      return(Menu)
+   else:   
+      tkinter.messagebox.showwarning("Kesalahan","\n Tidak Ada File \n")
+   return(Menu)
+
+def kamera_rekam():
+   # initialize the video writer (we'll instantiate later if need be)
+   tulis = None
+
+   # initialize the frame dimensions (we'll set them as soon as we read
+   # the first frame from the video)
+   W = None
+   H = None   
+   filerekam = tkinter.filedialog.asksaveasfilename(defaultextension=".avi",filetypes = (("video","*.avi"),("all files","*.*")))   
+   # pathrekam = os.path.abspath(os.path.expanduser(os.path.expandvars(filerekam)))
+   # print(pathrekam)
+   if filerekam is None: 
+      return   
+   rekam =cv2.VideoCapture(0)
+   frame = rekam.read()
+   frame = frame[1]
+   f_height, f_width, _ = frame.shape
+   print (f_height , f_width) 
+   fps = FPS().start()
+   # fourcc=cv2.VideoWriter_fourcc(*'MJPG') 
+   # tulis=cv2.VideoWriter(filerekam,fourcc,30,(fwidth,fheight))
+   while (rekam.isOpened()):
+      frame=rekam.read()
+      frame = frame[1]
+      if frame is None:
+         break          
+      frame = imutils.resize(frame, width=640)
+      # if the frame dimensions are empty, set them
+      if W is None or H is None:
+         (H, W) = frame.shape[:2]  
+      if filerekam is not None and tulis is None:
+         fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+         tulis = cv2.VideoWriter(filerekam, fourcc, 30,
+               (W, H), True)                   
+      # opsi penyimpanan frame dengan RGB/GRAY dengan convert)         
+      gray  = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      color = cv2.cvtColor(frame,cv2.COLOR_RGB2BGR)
+      if tulis is not None:
+         tulis.write(frame)         
+      cv2.imshow('Kamera dan Rekam',frame)
+      key = cv2.waitKey(1) & 0xFF
+      if key == ord("q"):
          break
-   op.release()
-   capture.release()
-   cv2.destroyAllWindows()   
+      fps.update()  
+   # check to see if we need to release the video writer pointer
+   if tulis is not None:
+      tulis.release()   
+   rekam.release()
+   cv2.destroyAllWindows()  
+   tkinter.messagebox.showinfo("Info","\n Rekam video selesai \n") 
+   return(Menu)    
+   while False:   
+      tkinter.messagebox.showwarning("Kesalahan","\n Folder Tidak Ditemukan \n")
+   return(Menu)   
 
 def webdet():
    capture =cv2.VideoCapture(0)
@@ -112,6 +192,7 @@ def webdet():
           break
    capture.release()
    cv2.destroyAllWindows()
+
 def webdetRec():
    capture =cv2.VideoCapture(0)
    face_cascade = cv2.CascadeClassifier('lbpcascade_frontalface.xml')
@@ -188,23 +269,23 @@ def blink():
    cv2.destroyAllWindows()
 
    
-but1=Button(frame,padx=5,pady=5,width=39,bg='white',fg='black',relief=GROOVE,command=web,text='Open Cam',font=('helvetica 15 bold'))
+but1=Button(frame,padx=5,pady=5,width=39,bg='white',fg='black',relief=GROOVE,command=deteksi_kamera,text='Buka Kamera',font=('helvetica 15 bold'))
 but1.place(x=5,y=104)
 
-but2=Button(frame,padx=5,pady=5,width=39,bg='white',fg='black',relief=GROOVE,command=webrec,text='Open Cam & Record',font=('helvetica 15 bold'))
+but2=Button(frame,padx=5,pady=5,width=39,bg='white',fg='black',relief=GROOVE,command=kamera_rekam,text='Buka Kamera dan Rekam',font=('helvetica 15 bold'))
 but2.place(x=5,y=176)
 
-but3=Button(frame,padx=5,pady=5,width=39,bg='white',fg='black',relief=GROOVE,command=webdet,text='Open Cam & Detect',font=('helvetica 15 bold'))
+but3=Button(frame,padx=5,pady=5,width=39,bg='white',fg='black',relief=GROOVE,command=webdet,text='Buka Kamera dan Deteksi',font=('helvetica 15 bold'))
 but3.place(x=5,y=250)
 
-but4=Button(frame,padx=5,pady=5,width=39,bg='white',fg='black',relief=GROOVE,command=webdetRec,text='Detect & Record',font=('helvetica 15 bold'))
+but4=Button(frame,padx=5,pady=5,width=39,bg='white',fg='black',relief=GROOVE,command=webdetRec,text='Deteksi dan Rekam',font=('helvetica 15 bold'))
 but4.place(x=5,y=322)
 
-but5=Button(frame,padx=5,pady=5,width=39,bg='white',fg='black',relief=GROOVE,command=blink,text='Detect Eye Blink & Record With Sound',font=('helvetica 15 bold'))
-but5.place(x=5,y=400)
+# but5=Button(frame,padx=5,pady=5,width=39,bg='white',fg='black',relief=GROOVE,command=blink,text='Detect Eye Blink & Record With Sound',font=('helvetica 15 bold'))
+# but5.place(x=5,y=400)
 
-but5=Button(frame,padx=5,pady=5,width=5,bg='white',fg='black',relief=GROOVE,text='EXIT',command=exitt,font=('helvetica 15 bold'))
-but5.place(x=210,y=478)
+but5=Button(frame,padx=5,pady=5,width=8,bg='white',fg='black',relief=GROOVE,text='KELUAR',command=keluar,font=('helvetica 15 bold'))
+but5.place(x=188,y=478)
 
 
 root.mainloop()

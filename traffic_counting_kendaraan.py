@@ -4,7 +4,7 @@
 # F5 untuk mengeksekusi program dengan debbuging                                       # 
 # Ctrl + F5 untuk mengeksekusi program tanpa debbuging                                 #     
 # NOTE :                                                                               #   
-# All syntax has been tested in Microsoft Visual Code                                   # 
+# All syntax has been tested in Micosoft Visual Code                                   # 
 # #################################################################################### #
 # 
 # Untuk membaca input file video 
@@ -93,7 +93,7 @@ MAX_CONSECUTIVE_TRACKING_FAILURES = 15
 
 # Buat fungsi blob dari 
 def get_bounding_boxes(frame):
-    fullbody_cascade = cv2.CascadeClassifier('D:/Skripsi Opick/GITHUB_WORKFLOW/Opencv_Traffic_Counting_System/haar_cascade_classifier/train_cascade_cars.xml')
+    fullbody_cascade = cv2.CascadeClassifier('cascade_baru_fix.xml')
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     _bounding_boxes = fullbody_cascade.detectMultiScale(gray)
     return _bounding_boxes
@@ -108,19 +108,12 @@ for box in initial_bboxes:
     _blob = Blob(box, tracker)
     blobs[blob_id] = _blob
 
-f_height, f_width, _ = frame.shape
-
-# set counting line
-cl_y = round(4 / 5 * f_height)
-counting_line = [(0, cl_y), (f_width, cl_y)]
-vehicle_count = 0
-
 totalFrames = 0
 fps = FPS().start()
 
 #read until video is completed
 while True :
-    alamat='http://tcsdishubsukabumi.co.nf/log.php?'
+    alamat='http://localhost/PROGRAM_OPICK/index.php'
 
     # frame_counter = frame_counter + 1
     # grab the frame from the threaded video stream and resize it
@@ -142,13 +135,17 @@ while True :
     if W is None or H is None:
         (H, W) = frame.shape[:2]
 
+    f_height, f_width, _ = frame.shape
     # if we are supposed to be writing a video to disk, initialize
     # the writer
     if args["output"] is not None and writer is None:
         fourcc = cv2.VideoWriter_fourcc(*"MJPG")
         writer = cv2.VideoWriter(args["output"], fourcc, 30,
             (W, H), True)
-
+    # set counting line
+    cl_y = round(4 / 5 * f_height)
+    counting_line = [(0, cl_y), (f_width, cl_y)]
+    vehicle_count = 0
     #convert video into gray scale of each frames
     # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     
@@ -183,12 +180,10 @@ while True :
                 vehicle_count += 1
 
                 # log count data to a file (vehicle_id, count, datetime)
-                _row = '{0}, {1}, {2}\n'.format('kendaraan_' + str(_id), vehicle_count, datetime.now())
+                _row = '{0}, {1}, {2}\n'.format('kendaraan_' + str(_id), vehicle_count, datetime.datetime.now())
                 log_file.write(_row)
                 log_file.flush()     
-    # request_string = alamat + "kendaraan=" + str(_id) + "&jumlah=" + str(vehicle_count) + "&waktu=" + str(datetime.now())
-    request_string = alamat + "jumlah=" + str(vehicle_count) 
-    os.system('curl ' + '"' + request_string + '"')
+
     # rerun detection, add new blobs 
     if frame_counter >= DETECTION_FRAME_RATE:
         boxes = get_bounding_boxes(frame)
